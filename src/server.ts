@@ -1,8 +1,10 @@
+/* eslint-disable no-console */
 
 import mongoose from "mongoose";
 import {Server} from "http"
 import app from "./app";
 import 'dotenv/config'
+import { envVars } from "./config/env";
 
 
 
@@ -12,7 +14,7 @@ const startServer = async () => {
 
     try {
 
-        await mongoose.connect(`mongodb+srv://${process.env.DB_USERNAME}:${process.env.PASS}@cluster1.25zkwku.mongodb.net/tour-management-backend?appName=Cluster1`)
+        await mongoose.connect(`${envVars.DB_URL}`)
 
         console.log("connected to db");
 
@@ -26,4 +28,41 @@ const startServer = async () => {
 }
 
 startServer()
+
+process.on("unhandledRejection",(err) => {
+    console.log(err);
+    if(server) {
+        server.close(() => {
+            process.exit(1)
+        })
+    }
+
+    process.exit(1)
+})
+
+process.on("uncaughtException",(err) => {
+    console.log(err);
+
+    if(server) {
+        server.close(() => {
+            process.exit(1)
+        })
+    }
+
+    process.exit(1)
+})
+
+process.on("SIGTERM",() => {
+    console.log("sigterm signal recieved.. server shutting down");
+
+    if(server) {
+        server.close(() => {
+            process.exit(1)
+        })
+    }
+
+    process.exit(1)
+})
+
+
 
