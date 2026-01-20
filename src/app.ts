@@ -1,8 +1,11 @@
 
 import express, { Request, Response } from "express"
-import { UserRoutes } from "./app/modules/user/user.route"
+
 import cors from "cors"
 import { router } from "./routes"
+import { globalErrorHandler } from "./app/middlewares/globalErrorHandler"
+import { notFound } from "./app/middlewares/notFound"
+
 
 const app = express()
 app.use(express.json())
@@ -16,6 +19,11 @@ app.get("/",(req:Request,res:Response) => {
 
     res.send("server is working hard")
 })
+
+
+app.use(globalErrorHandler)
+
+app.use(notFound)
 
 
 export default app
