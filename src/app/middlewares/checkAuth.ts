@@ -1,0 +1,36 @@
+import { NextFunction, Request, Response } from "express"
+import AppError from "../errorHelpers/AppError"
+import { StatusCodes } from "http-status-codes"
+import { verifyToken } from "../utils/jwt"
+import { envVars } from "../../config/env"
+import { JwtPayload } from "jsonwebtoken"
+
+export const checkAuth = (...authRoles:string[]) =>  async(req: Request, res: Response, next: NextFunction) => {
+
+try {
+    
+    const accessToken = req.headers.authorization
+
+    if(!accessToken) {
+        throw new AppError(StatusCodes.BAD_REQUEST,"no token recieved")
+    }
+
+    const verifiedToken = verifyToken(accessToken,envVars.JWT_ACCESS_SECRET) 
+
+    const role = (verifiedToken as JwtPayload).role
+
+    if( !authRoles.includes(role)) {
+
+        throw new AppError(StatusCodes.BAD_REQUEST,"you are not allowed")
+    }
+
+    next()
+
+} catch (error) {
+
+    // throw new AppError(StatusCodes.BAD_REQUEST,"invalid token ")
+    next(error)
+    
+}
+
+}

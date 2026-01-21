@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.6",
@@ -23,6 +24,7 @@
     "typescript-eslint": "^8.53.0"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
