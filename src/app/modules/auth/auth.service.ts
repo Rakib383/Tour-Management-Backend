@@ -1,10 +1,12 @@
 import AppError from "../../errorHelpers/AppError";
-import { IUser } from "../user/user.interface";
+import { IsActive, IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
 import httpStatus from "http-status-codes"
 import bcryptjs from "bcryptjs"
-import { generateToken } from "../../utils/jwt";
+import { generateToken, verifyToken } from "../../utils/jwt";
 import { envVars } from "../../../config/env";
+import { createUserTokens } from "../../utils/userTokens";
+import { JwtPayload } from "jsonwebtoken";
 
 const credentialsLogin = async (payload:Partial<IUser>) => {
 
@@ -23,6 +25,45 @@ if(!isPasswordMatched) {
      throw new AppError(httpStatus.BAD_REQUEST, "incorrect password")
 }
 
+
+const userTokens = createUserTokens(isUserExist)
+
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const {password:pass,...rest} = isUserExist.toObject();
+
+return {
+    accessToken:userTokens.accessToken,
+    refreshToken:userTokens.refreshToken,
+    user:rest
+}
+
+
+}
+
+
+const getNewAccessToken = async (refreshToken:string) => {
+
+    const verifiedRefreshToken = verifyToken(refreshToken,envVars.JWT_REFRESH_SECRET) as JwtPayload
+
+
+
+     const isUserExist = await User.findOne({ email:verifiedRefreshToken.email })
+
+
+    if (!isUserExist) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User doesn't exist")
+
+    }
+    if (isUserExist.isActive === IsActive.BLOCKED || isUserExist.isActive === IsActive.INACTIVE) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User is blocked")
+
+    }
+    if (isUserExist.isDeleted) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User is deleted")
+
+    }
+
 const JwtPayload = {
     userId: isUserExist._id,
     email:isUserExist.email,
@@ -33,7 +74,7 @@ const accessToken = generateToken(JwtPayload,envVars.JWT_ACCESS_SECRET,envVars.J
 
 
 return {
-    accessToken
+      accessToken
 }
 
 
@@ -41,5 +82,6 @@ return {
 
 
 export const AuthServices = {
-    credentialsLogin
+    credentialsLogin,
+    getNewAccessToken
 }

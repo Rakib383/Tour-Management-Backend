@@ -15,14 +15,18 @@ try {
         throw new AppError(StatusCodes.BAD_REQUEST,"no token recieved")
     }
 
-    const verifiedToken = verifyToken(accessToken,envVars.JWT_ACCESS_SECRET) 
+    const verifiedToken = verifyToken(accessToken,envVars.JWT_ACCESS_SECRET) as JwtPayload
 
-    const role = (verifiedToken as JwtPayload).role
+    
+
+    const role = verifiedToken.role
 
     if( !authRoles.includes(role)) {
 
         throw new AppError(StatusCodes.BAD_REQUEST,"you are not allowed")
     }
+
+    req.user = verifiedToken
 
     next()
 
