@@ -4,6 +4,9 @@ import { StatusCodes } from "http-status-codes"
 import { verifyToken } from "../utils/jwt"
 import { envVars } from "../../config/env"
 import { JwtPayload } from "jsonwebtoken"
+import { User } from "../modules/user/user.model"
+import httpStatus from "http-status-codes"
+import { IsActive } from "../modules/user/user.interface"
 
 export const checkAuth = (...authRoles:string[]) =>  async(req: Request, res: Response, next: NextFunction) => {
 
@@ -17,7 +20,21 @@ try {
 
     const verifiedToken = verifyToken(accessToken,envVars.JWT_ACCESS_SECRET) as JwtPayload
 
-    
+     const isUserExist = await User.findOne({ email:verifiedToken.email })
+
+
+    if (!isUserExist) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User doesn't exist")
+
+    }
+    if (isUserExist.isActive === IsActive.BLOCKED || isUserExist.isActive === IsActive.INACTIVE) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User is blocked")
+
+    }
+    if (isUserExist.isDeleted) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User is deleted")
+
+    }
 
     const role = verifiedToken.role
 
@@ -25,6 +42,8 @@ try {
 
         throw new AppError(StatusCodes.BAD_REQUEST,"you are not allowed")
     }
+
+
 
     req.user = verifiedToken
 
