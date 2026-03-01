@@ -3,9 +3,10 @@
 import { NextFunction, Request, Response } from "express"
 import { envVars } from "../../config/env"
 import AppError from "../errorHelpers/AppError"
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const globalErrorHandler = (err:any,req:Request,res:Response,next:NextFunction) => {
+export const globalErrorHandler = async (err:any,req:Request,res:Response,next:NextFunction) => {
     let statusCode = 500
 let message = "something went wrong"
 const errorSources :any = []
@@ -13,6 +14,18 @@ const errorSources :any = []
 
  if(envVars.NODE_ENV === "development") {
             console.log(err);
+        }
+
+
+        if(req.file) {
+            await deleteImageFromCloudinary(req.file.path)
+        }
+
+        if(req.files && req.files.length) {
+            const imageUrls = (req.files as Express.Multer.File[]).map(file => file.path)
+
+            await Promise.all(imageUrls.map(url => deleteImageFromCloudinary(url)))
+
         }
 
 // duplicate error

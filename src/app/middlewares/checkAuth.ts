@@ -35,6 +35,10 @@ try {
         throw new AppError(httpStatus.BAD_REQUEST, "User is deleted")
 
     }
+    if (isUserExist.isVerified) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User is not verified")
+
+    }
 
     const role = verifiedToken.role
 

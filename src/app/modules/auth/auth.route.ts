@@ -3,6 +3,7 @@ import { AuthControllers } from "./auth.controller";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
 import passport from "passport";
+import { envVars } from "../../../config/env";
 
 export const AuthRoutes = Router()
 
@@ -11,7 +12,9 @@ AuthRoutes.post("/login",AuthControllers.credentialsLogin)
 AuthRoutes.post("/refresh-token",AuthControllers.getNewAccessToken)
 AuthRoutes.post("/logout",AuthControllers.logout)
 
-AuthRoutes.post("/reset-password",checkAuth(...Object.values(Role)),AuthControllers.resetPassword)
+AuthRoutes.post("/change-password",checkAuth(...Object.values(Role)),AuthControllers.changePassword)
+AuthRoutes.post("/set-password",checkAuth(...Object.values(Role)),AuthControllers.setPassword)
+// AuthRoutes.post("/forget-password",checkAuth(...Object.values(Role)),AuthControllers.forgetPassword)
 
 AuthRoutes.get("/google",async (req:Request,res:Response,next:NextFunction) => {
 
@@ -21,5 +24,5 @@ AuthRoutes.get("/google",async (req:Request,res:Response,next:NextFunction) => {
 
 })
 
-AuthRoutes.get("/google/callback",passport.authenticate("google",{failureRedirect:"/login"}),AuthControllers.googleCallbackController)
+AuthRoutes.get("/google/callback",passport.authenticate("google",{failureRedirect:`${envVars.FRONTEND_URL}?error="there is some issue with your account"`}),AuthControllers.googleCallbackController)
 

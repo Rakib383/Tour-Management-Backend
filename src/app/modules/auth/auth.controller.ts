@@ -11,6 +11,7 @@ import { setAuthCookie } from "../../utils/setCookie"
 import { createUserTokens } from "../../utils/userTokens"
 import { envVars } from "../../../config/env"
 import passport from "passport"
+import { JwtPayload } from "jsonwebtoken"
 
 
 const credentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -77,6 +78,44 @@ const getNewAccessToken = catchAsync(async (req: Request, res: Response, next: N
 
 
 
+const changePassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+  const decodedToken = req.user!;
+  const newPassword = req.body.newPassword;
+  const oldPassword = req.body.oldPassword;
+
+  await AuthServices.resetPassword(oldPassword,newPassword,decodedToken);
+
+    sendResponse(res,{
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"password changed successfully",
+     data:null,
+    })
+
+})
+const setPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+  const decodedToken = req.user as JwtPayload
+
+  const {password} = req.body
+
+
+
+ await AuthServices.setPassword(decodedToken.userId,password);
+
+    sendResponse(res,{
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"password setted successfully",
+     data:null,
+    })
+
+
+
+ 
+
+})
 const resetPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
   const decodedToken = req.user!;
@@ -149,5 +188,7 @@ credentialsLogin,
 getNewAccessToken,
 logout,
 resetPassword,
-googleCallbackController
+setPassword,
+googleCallbackController,
+changePassword
 }
