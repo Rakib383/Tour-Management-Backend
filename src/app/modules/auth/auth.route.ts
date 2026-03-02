@@ -14,7 +14,7 @@ AuthRoutes.post("/logout",AuthControllers.logout)
 
 AuthRoutes.post("/change-password",checkAuth(...Object.values(Role)),AuthControllers.changePassword)
 AuthRoutes.post("/set-password",checkAuth(...Object.values(Role)),AuthControllers.setPassword)
-// AuthRoutes.post("/forget-password",checkAuth(...Object.values(Role)),AuthControllers.forgetPassword)
+AuthRoutes.post("/forget-password",checkAuth(...Object.values(Role)),AuthControllers.forgetPassword)
 
 AuthRoutes.get("/google",async (req:Request,res:Response,next:NextFunction) => {
 
