@@ -133,6 +133,21 @@ const resetPassword = catchAsync(async (req: Request, res: Response, next: NextF
 
 })
 
+const forgetPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+  const {email} = req.body
+
+  await AuthServices.forgetPassword(email);
+
+    sendResponse(res,{
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"email sent successfully",
+     data:null,
+    })
+
+})
+
 const logout = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
   res.clearCookie("accessToken",{
@@ -188,6 +203,7 @@ credentialsLogin,
 getNewAccessToken,
 logout,
 resetPassword,
+forgetPassword,
 setPassword,
 googleCallbackController,
 changePassword
