@@ -80,7 +80,7 @@ const setPassword = async (userId: string, plainPassword: string) => {
         throw new AppError(404, "user not found")
     }
 
-    if (user.password && user.auths.some(auth => auth.provider = "google")) {
+    if (user.password && user.auths.some(auth => auth.provider === "google")) {
         throw new AppError(httpStatus.BAD_REQUEST, "you have already set your password. update the password from your profile")
     }
 
@@ -104,25 +104,24 @@ const setPassword = async (userId: string, plainPassword: string) => {
 }
 
 
-const resetPassword = async (oldPassword: string, newPassword: string, decodedToken: JwtPayload) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const resetPassword = async (payload:Record<string,any>, decodedToken: JwtPayload) => {
 
-    const user = await User.findById(decodedToken.userId)
-
-    const isOldPasswordMatch = await bcryptjs.compare(oldPassword, user?.password as string)
-
-    if (!isOldPasswordMatch) {
-        throw new AppError(httpStatus.UNAUTHORIZED, "old password does not match")
+    if(payload.id != decodedToken.userId) {
+        throw new AppError(401,"you can not reset your password")
     }
 
-    user!.password = await bcryptjs.hash(newPassword, Number(envVars.BCRYPT_SALE_ROUND))
+    const hashedPassword = await bcryptjs.hash(payload.newPassword,Number(envVars.BCRYPT_SALE_ROUND))
 
-    user!.save()
+    await User.findByIdAndUpdate(payload.id,{password:hashedPassword})
+
+
 
 }
 
 const forgetPassword = async (email: string) => {
 
-    const isUserExist = await User.findById(email)
+    const isUserExist = await User.findOne({email})
 
     if (!isUserExist) {
         throw new AppError(httpStatus.BAD_REQUEST, "User doesn't exist")
@@ -136,7 +135,7 @@ const forgetPassword = async (email: string) => {
         throw new AppError(httpStatus.BAD_REQUEST, "User is deleted")
 
     }
-    if (isUserExist.isVerified) {
+    if (!isUserExist.isVerified) {
         throw new AppError(httpStatus.BAD_REQUEST, "User is not verified")
 
     }

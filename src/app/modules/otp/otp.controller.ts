@@ -1,0 +1,32 @@
+import { Request, Response } from "express";
+import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
+
+const sendOTP = catchAsync(async (req: Request, res: Response) => {
+    
+
+    sendResponse(res,{
+        statusCode:200,
+        success:true,
+        message:"otp sent successfully",
+        data:null
+    })
+   
+});
+
+const verifyOTP = catchAsync(async (req: Request, res: Response) => {
+    
+
+    sendResponse(res,{
+        statusCode:200,
+        success:true,
+        message:"otp sent successfully",
+        data:null
+    })
+   
+});
+
+export const OTPController = {
+    sendOTP,
+    verifyOTP 
+}

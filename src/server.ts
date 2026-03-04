@@ -6,6 +6,7 @@ import app from "./app";
 import 'dotenv/config'
 import { envVars } from "./config/env";
 import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
+import { connectRedis } from "./config/redis.config";
 
 
 
@@ -29,6 +30,7 @@ const startServer = async () => {
 }
 
 (async ()=> {
+    await connectRedis()
     await startServer()
     await seedSuperAdmin()
 })()
