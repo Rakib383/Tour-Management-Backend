@@ -8,6 +8,10 @@ import AppError from "../../errorHelpers/AppError";
 import httpStatus from "http-status-codes"
 import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
 import { SSLService } from "../sslCommerz/sslCommerz.service";
+import { generatePdf, IInvoiceData } from "../../utils/invoice";
+import { ITour } from "../tour/tour.interface";
+import { IUser } from "../user/user.interface";
+import { sendEmail } from "../../utils/sendEmail";
 
 
 
@@ -60,11 +64,47 @@ const successPayment = async (query: Record<string, string>) => {
             status: PAYMENT_STATUS.PAID
         }, { new: true, runValidators: true, session })
 
+         if(!updatedPayment) {
+            throw new AppError(404,"booking error occurred")
+        }
 
-         await Booking.findByIdAndUpdate(updatedPayment?.booking, {
+         const updatedBooking = await Booking.findByIdAndUpdate(updatedPayment?.booking, {
             status: BOOKING_STATUS.COMPLETE
         }, { new: true, runValidators: true, session })
+        .populate("tour","title")
+        .populate("user","name email")
+        
 
+        if(!updatedBooking) {
+            throw new AppError(404,"booking error occured")
+        }
+
+        const invoiceData :IInvoiceData = {
+            bookingDate:updatedBooking.createdAt as Date,
+            transactionId:updatedPayment?.transactionId,
+            guestCount:updatedBooking?.guestCount,
+            totalAmount:updatedPayment?.amount,
+            tourTitle:(updatedBooking.tour as unknown as ITour).title,
+            userName:(updatedBooking.user as unknown as IUser).name
+
+        }
+
+        const pdfBuffer = await generatePdf(invoiceData)
+
+        await sendEmail({
+            to:(updatedBooking.user as unknown as IUser).email,
+            subject:"your booking invoice",
+            templateName:"invoice",
+            templateData:invoiceData,
+            attachments:[
+                {
+                    filename:"invoice.pdf",
+                    content:pdfBuffer,
+                    contentType:"application/pdf"
+                }
+            ]
+
+        })
 
         await session.commitTransaction()
 

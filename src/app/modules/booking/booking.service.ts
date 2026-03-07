@@ -33,7 +33,6 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
         }
 
 
-
         const tour = await Tour.findById(payload.tour).select("costFrom")
 
         if (!tour?.costFrom) {
